@@ -145,4 +145,20 @@ http.get('/candidates', async ({ request }) => {
     return HttpResponse.json({ message: 'Failed to fetch candidates' }, { status: 500 });
   }
 }),
+
+// Handles updating a candidate (e.g., changing their stage)
+http.patch('/candidates/:id', async ({ request, params }) => {
+  try {
+    const candidateId = parseInt(params.id);
+    const updates = await request.json();
+    
+    await db.candidates.update(candidateId, updates);
+    const updatedCandidate = await db.candidates.get(candidateId);
+
+    return HttpResponse.json(updatedCandidate);
+  } catch (error) {
+    console.error("Error updating candidate:", error);
+    return HttpResponse.json({ message: 'Failed to update candidate' }, { status: 500 });
+  }
+}),
 ];
