@@ -1,9 +1,10 @@
 import React from 'react';
 import './JobCard.css';
 
-const JobCard = ({ job, onEdit }) => { 
+const JobCard = ({ job, onEdit, onArchiveToggle }) => {
   return (
     <div className={`job-card ${job.status}`}>
+      
       <div className="job-card-header">
         <h3 className="job-title">{job.title}</h3>
         <span className="job-status">{job.status}</span>
@@ -16,8 +17,15 @@ const JobCard = ({ job, onEdit }) => {
           ))}
         </div>
       </div>
-     
+      
       <div className="job-card-actions">
+       
+        <button 
+          onClick={onArchiveToggle} 
+          className="archive-btn"
+        >
+          {job.status === 'active' ? 'Archive' : 'Unarchive'}
+        </button>
         <button onClick={onEdit} className="edit-btn">Edit</button>
       </div>
     </div>

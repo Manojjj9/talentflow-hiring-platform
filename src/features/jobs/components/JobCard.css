@@ -63,6 +63,7 @@
   padding-top: 12px;
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
 }
 
 .edit-btn {
@@ -77,5 +78,21 @@
 
 .edit-btn:hover {
   background-color: #007bff;
+  color: #fff;
+}
+
+
+.archive-btn {
+  padding: 6px 12px;
+  border: 1px solid #6c757d;
+  background-color: transparent;
+  color: #6c757d;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.archive-btn:hover {
+  background-color: #6c757d;
   color: #fff;
 }
