@@ -1,14 +1,52 @@
+// src/App.jsx
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, NavLink } from 'react-router-dom';
 import JobsBoard from './pages/JobsBoard';
 import JobDetailPage from './pages/JobDetailPage';
+import CandidatesPage from './pages/CandidatesPage'; // Import the new page
+
+// Basic styles for the navigation
+const navStyles = {
+  display: 'flex',
+  gap: '1rem',
+  padding: '1rem 2rem',
+  backgroundColor: '#f8f9fa',
+  borderBottom: '1px solid #dee2e6'
+};
+
+const navLinkStyles = {
+  textDecoration: 'none',
+  color: '#007bff',
+  fontWeight: 'bold',
+};
+
+const activeLinkStyles = {
+  color: '#0056b3',
+  textDecoration: 'underline',
+};
 
 function App() {
   return (
     <div className="App">
+      <nav style={navStyles}>
+        <NavLink 
+          to="/" 
+          style={({ isActive }) => ({ ...navLinkStyles, ...(isActive ? activeLinkStyles : {}) })}
+        >
+          Jobs
+        </NavLink>
+        <NavLink 
+          to="/candidates" 
+          style={({ isActive }) => ({ ...navLinkStyles, ...(isActive ? activeLinkStyles : {}) })}
+        >
+          Candidates
+        </NavLink>
+      </nav>
+
       <Routes>
         <Route path="/" element={<JobsBoard />} />
         <Route path="/jobs/:jobId" element={<JobDetailPage />} />
+        <Route path="/candidates" element={<CandidatesPage />} />
       </Routes>
     </div>
   );

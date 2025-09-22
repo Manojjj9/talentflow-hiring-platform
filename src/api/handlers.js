@@ -103,4 +103,46 @@ export const handlers = [
       return HttpResponse.json({ message: 'Failed to reorder jobs' }, { status: 500 });
     }
   }),
+
+  // Handles GET /candidates request
+http.get('/candidates', async ({ request }) => {
+  try {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const pageSize = parseInt(url.searchParams.get('pageSize') || '20');
+    const search = url.searchParams.get('search') || '';
+    const stage = url.searchParams.get('stage') || 'all';
+
+    const allCandidates = await db.candidates.toArray();
+
+    const filteredCandidates = allCandidates.filter(candidate => {
+      // Stage filter
+      if (stage !== 'all' && candidate.stage !== stage) {
+        return false;
+      }
+      // Search filter (name or email, case-insensitive)
+      if (search && 
+          !candidate.name.toLowerCase().includes(search.toLowerCase()) && 
+          !candidate.email.toLowerCase().includes(search.toLowerCase())) {
+        return false;
+      }
+      return true;
+    });
+
+    const totalCount = filteredCandidates.length;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const paginatedCandidates = filteredCandidates.slice(start, end);
+
+    await delay(300);
+
+    return HttpResponse.json({
+      candidates: paginatedCandidates,
+      totalCount: totalCount,
+    });
+  } catch (error) {
+    console.error("Error fetching candidates:", error);
+    return HttpResponse.json({ message: 'Failed to fetch candidates' }, { status: 500 });
+  }
+}),
 ];
