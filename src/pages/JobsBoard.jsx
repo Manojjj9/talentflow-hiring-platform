@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import JobCard from '../features/jobs/components/JobCard';
 import Pagination from '../components/common/Pagination';
 import Modal from '../components/common/Modal';
@@ -8,7 +10,6 @@ import './JobsBoard.css';
 const PAGE_SIZE = 10;
 
 const JobsBoard = () => {
-  
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,8 +18,9 @@ const JobsBoard = () => {
   const [filters, setFilters] = useState({ search: '', status: 'all', tags: '' });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
+  const sensors = useSensors(useSensor(PointerSensor));
 
-  const fetchJobs = useCallback(async () => { 
+  const fetchJobs = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({ page: currentPage, pageSize: PAGE_SIZE, ...filters });
@@ -33,7 +35,7 @@ const JobsBoard = () => {
 
   useEffect(() => { fetchJobs(); }, [fetchJobs]);
 
-  const handleFilterChange = (e) => { 
+  const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
     setCurrentPage(1);
@@ -44,17 +46,17 @@ const JobsBoard = () => {
     setIsModalOpen(true);
   };
 
-  const handleOpenEditModal = (job) => { 
+  const handleOpenEditModal = (job) => {
     setEditingJob(job);
     setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => { 
+  const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingJob(null);
   };
 
-  const handleSaveJob = async (formData) => { 
+  const handleSaveJob = async (formData) => {
     const url = editingJob ? `/jobs/${editingJob.id}` : '/jobs';
     const method = editingJob ? 'PATCH' : 'POST';
     await fetch(url, {
@@ -66,7 +68,6 @@ const JobsBoard = () => {
     fetchJobs();
   };
 
-  
   const handleArchiveToggle = async (job) => {
     const newStatus = job.status === 'active' ? 'archived' : 'active';
     await fetch(`/jobs/${job.id}`, {
@@ -74,14 +75,40 @@ const JobsBoard = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus }),
     });
-    fetchJobs(); 
+    fetchJobs();
+  };
+
+  const handleDragEnd = async (event) => {
+    const { active, over } = event;
+    if (active && over && active.id !== over.id) {
+      const originalJobs = [...jobs];
+      const oldIndex = jobs.findIndex((j) => j.id === active.id);
+      const newIndex = jobs.findIndex((j) => j.id === over.id);
+
+      const reorderedJobs = arrayMove(jobs, oldIndex, newIndex);
+      setJobs(reorderedJobs);
+
+      const jobsToUpdate = reorderedJobs.map((job, index) => ({ id: job.id, order: index }));
+
+      try {
+        const response = await fetch('/jobs/reorder', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jobsToUpdate }),
+        });
+        if (!response.ok) throw new Error('Failed to reorder jobs.');
+        fetchJobs();
+      } catch (err) {
+        console.error("Reorder failed, rolling back.");
+        setJobs(originalJobs);
+      }
+    }
   };
 
   return (
     <div style={{ padding: '20px' }}>
-      
       <div className="jobs-header">
-        <h1>Jobs Board</h1>
+        <h1>Jobs Dashboard - Test</h1>
         <button className="create-job-btn" onClick={handleOpenCreateModal}>+ Create Job</button>
       </div>
       <div className="filters">
@@ -90,27 +117,17 @@ const JobsBoard = () => {
         <div><label htmlFor="tags">Search by Tag</label><input type="text" id="tags" name="tags" value={filters.tags} onChange={handleFilterChange} placeholder="e.g., Engineering" /></div>
       </div>
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage}/>
-      
       {loading && <div>Loading jobs...</div>}
       {error && <div>Error: {error}</div>}
       {!loading && !error && (
-        <div className="job-list">
-          {jobs.map(job => (
-            <JobCard 
-              key={job.id} 
-              job={job} 
-              onEdit={() => handleOpenEditModal(job)}
-              onArchiveToggle={() => handleArchiveToggle(job)} 
-            />
-          ))}
-        </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={jobs.map(j => j.id)} strategy={verticalListSortingStrategy}>
+            <div className="job-list">{jobs.map(job => (<JobCard key={job.id} job={job} onEdit={() => handleOpenEditModal(job)} onArchiveToggle={() => handleArchiveToggle(job)} />))}</div>
+          </SortableContext>
+        </DndContext>
       )}
-      
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingJob ? "Edit Job" : "Create a New Job"}>
-        <JobForm onSave={handleSaveJob} onCancel={handleCloseModal} initialData={editingJob} />
-      </Modal>
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingJob ? "Edit Job" : "Create a New Job"}><JobForm onSave={handleSaveJob} onCancel={handleCloseModal} initialData={editingJob} /></Modal>
     </div>
   );
 };
