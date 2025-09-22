@@ -1,0 +1,16 @@
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 20px;
+  font-weight: bold;
+  color: #007bff;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.back-link:hover {
+  background-color: #f0f0f0;
+  text-decoration: underline;
+}

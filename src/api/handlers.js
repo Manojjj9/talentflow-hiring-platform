@@ -11,7 +11,7 @@ export const handlers = [
       const url = new URL(request.url);
       const page = parseInt(url.searchParams.get('page') || '1');
       const pageSize = parseInt(url.searchParams.get('pageSize') || '10');
-      
+
       const search = url.searchParams.get('search') || '';
       const status = url.searchParams.get('status') || 'all';
       const tags = url.searchParams.get('tags') || '';
@@ -62,7 +62,7 @@ export const handlers = [
         status: 'active',
         order: newOrder,
       };
-      
+
       const newId = await db.jobs.add(jobToSave);
       const createdJob = await db.jobs.get(newId);
 
@@ -74,25 +74,43 @@ export const handlers = [
     }
   }),
 
-  
 
-// Handles a PATCH /jobs/:id request
-http.patch('/jobs/:id', async ({ request, params }) => {
-  try {
-    const jobId = parseInt(params.id);
-    const updates = await request.json();
 
-    if (updates.title) {
-      updates.slug = updates.title.toLowerCase().replace(/\s+/g, '-');
+  // Handles a PATCH /jobs/:id request
+  http.patch('/jobs/:id', async ({ request, params }) => {
+    try {
+      const jobId = parseInt(params.id);
+      const updates = await request.json();
+
+      if (updates.title) {
+        updates.slug = updates.title.toLowerCase().replace(/\s+/g, '-');
+      }
+
+      await db.jobs.update(jobId, updates);
+      const updatedJob = await db.jobs.get(jobId);
+
+      return HttpResponse.json(updatedJob);
+    } catch (error) {
+      console.error("Error updating job:", error);
+      return HttpResponse.json({ message: 'Failed to update job' }, { status: 500 });
     }
+  }),
 
-    await db.jobs.update(jobId, updates);
-    const updatedJob = await db.jobs.get(jobId);
+  // Handles a GET /jobs/:id request
+  http.get('/jobs/:id', async ({ params }) => {
+    try {
+      const jobId = parseInt(params.id);
+      const job = await db.jobs.get(jobId);
 
-    return HttpResponse.json(updatedJob);
-  } catch (error) {
-    console.error("Error updating job:", error);
-    return HttpResponse.json({ message: 'Failed to update job' }, { status: 500 });
-  }
-}),
+      if (job) {
+        return HttpResponse.json(job);
+      } else {
+        return HttpResponse.json({ message: 'Job not found' }, { status: 404 });
+      }
+    } catch (error) {
+      console.error("Error fetching single job:", error);
+      return HttpResponse.json({ message: 'Failed to fetch job' }, { status: 500 });
+    }
+  }),
+
 ];

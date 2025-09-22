@@ -96,3 +96,12 @@
   background-color: #6c757d;
   color: #fff;
 }
+
+.job-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.job-title-link:hover {
+  text-decoration: underline;
+}
