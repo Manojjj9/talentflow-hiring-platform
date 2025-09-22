@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
-import './JobForm.css'; 
+// src/features/jobs/components/JobForm.jsx
+import React, { useState, useEffect } from 'react'; // Import useEffect
+import './JobForm.css';
 
-const JobForm = ({ onSave, onCancel }) => {
+const JobForm = ({ onSave, onCancel, initialData }) => { // Add initialData prop
   const [title, setTitle] = useState('');
   const [tags, setTags] = useState('');
   const [error, setError] = useState('');
+
+  // Pre-fill form when initialData is provided
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title || '');
+      setTags((initialData.tags || []).join(', '));
+    }
+  }, [initialData]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -12,13 +21,13 @@ const JobForm = ({ onSave, onCancel }) => {
       setError('Title is required.');
       return;
     }
-    // Converting comma-separated string to an array of strings
     const tagsArray = tags.split(',').map(tag => tag.trim()).filter(Boolean);
     onSave({ title, tags: tagsArray });
   };
 
   return (
     <form onSubmit={handleSubmit} className="job-form">
+      {/* The rest of the JSX form remains the same */}
       {error && <p className="form-error">{error}</p>}
       <div className="form-group">
         <label htmlFor="title">Job Title</label>
@@ -28,7 +37,7 @@ const JobForm = ({ onSave, onCancel }) => {
           value={title}
           onChange={(e) => {
             setTitle(e.target.value);
-            if (error) setError(''); 
+            if (error) setError('');
           }}
           placeholder="e.g., Senior React Developer"
         />

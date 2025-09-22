@@ -1,7 +1,7 @@
 import React from 'react';
-import './JobCard.css'; 
+import './JobCard.css';
 
-const JobCard = ({ job }) => {
+const JobCard = ({ job, onEdit }) => { 
   return (
     <div className={`job-card ${job.status}`}>
       <div className="job-card-header">
@@ -15,6 +15,10 @@ const JobCard = ({ job }) => {
             <span key={tag} className="tag">{tag}</span>
           ))}
         </div>
+      </div>
+     
+      <div className="job-card-actions">
+        <button onClick={onEdit} className="edit-btn">Edit</button>
       </div>
     </div>
   );

@@ -73,4 +73,26 @@ export const handlers = [
       return HttpResponse.json({ message: 'Failed to create job' }, { status: 500 });
     }
   }),
+
+  
+
+// Handles a PATCH /jobs/:id request
+http.patch('/jobs/:id', async ({ request, params }) => {
+  try {
+    const jobId = parseInt(params.id);
+    const updates = await request.json();
+
+    if (updates.title) {
+      updates.slug = updates.title.toLowerCase().replace(/\s+/g, '-');
+    }
+
+    await db.jobs.update(jobId, updates);
+    const updatedJob = await db.jobs.get(jobId);
+
+    return HttpResponse.json(updatedJob);
+  } catch (error) {
+    console.error("Error updating job:", error);
+    return HttpResponse.json({ message: 'Failed to update job' }, { status: 500 });
+  }
+}),
 ];
