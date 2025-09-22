@@ -26,3 +26,25 @@
   border: 1px solid #ced4da;
   min-width: 200px;
 }
+
+
+.jobs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.create-job-btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  color: #fff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.create-job-btn:hover {
+  background-color: #0056b3;
+}
