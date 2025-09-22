@@ -5,7 +5,7 @@ export const db = new Dexie('talentflowDB');
 
 
 db.version(1).stores({
-  jobs: '++id, title, slug, status, order',
+  jobs: '++id, title, slug, status, *tags, order',
   candidates: '++id, name, email, stage, jobId',
   assessments: '++id, jobId',
 });

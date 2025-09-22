@@ -1,22 +1,23 @@
-import { rest } from 'msw';
+
+import { http, HttpResponse } from 'msw';
 import { db } from './db';
 
+
+const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
 export const handlers = [
-  
-  rest.get('/jobs', async (req, res, ctx) => {
+  http.get('/jobs', async () => {
     try {
       const jobs = await db.jobs.toArray();
-      
-      await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 200));
-
-      return res(
-        ctx.status(200),
-        ctx.json(jobs)
-      );
+      await delay(Math.random() * 1000 + 200);
+      return HttpResponse.json(jobs);
     } catch (error) {
-      return res(
-        ctx.status(500),
-        ctx.json({ message: 'Failed to fetch jobs' })
+      // THIS IS THE NEW LINE TO ADD
+      console.error("Error fetching jobs from Dexie:", error); 
+      
+      return HttpResponse.json(
+        { message: 'Failed to fetch jobs' },
+        { status: 500 }
       );
     }
   }),
