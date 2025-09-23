@@ -235,4 +235,23 @@ http.put('/assessments/:jobId', async ({ request, params }) => {
   await db.assessments.put({ jobId, structure });
   return HttpResponse.json({ success: true });
 }),
+
+// Handles POST /assessments/:jobId/submit
+http.post('/assessments/:jobId/submit', async ({ request, params }) => {
+  const jobId = parseInt(params.jobId);
+  const { answers } = await request.json();
+  
+  // For now, we'll just log the submission and save it.
+  // We'll assign it to a dummy candidateId of 1.
+  console.log(`Submission for Job ID ${jobId}:`, answers);
+  
+  await db.responses.add({
+    jobId,
+    candidateId: 1, // Dummy ID
+    answers,
+    submittedAt: new Date(),
+  });
+
+  return HttpResponse.json({ success: true, message: 'Assessment submitted successfully!' });
+}),
 ];

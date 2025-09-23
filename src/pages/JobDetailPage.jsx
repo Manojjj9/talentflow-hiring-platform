@@ -54,6 +54,15 @@ const JobDetailPage = () => {
           Manage Assessment
         </Link>
       </div>
+
+      <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '1px solid #eee', display: 'flex', gap: '1rem' }}>
+        <Link to={`/jobs/${jobId}/apply`} className="create-job-btn" style={{ textDecoration: 'none' }}>
+          Apply Now
+        </Link>
+        <Link to={`/jobs/${jobId}/assessment`} className="edit-btn" style={{ textDecoration: 'none' }}>
+          Manage Assessment
+        </Link>
+      </div>
     </div>
 
 
