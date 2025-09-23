@@ -190,4 +190,35 @@ http.get('/candidates/:id/timeline', async ({ params }) => {
   await delay(200); // simulate network latency
   return HttpResponse.json(timeline.sort((a, b) => a.date - b.date));
 }),
+
+
+// Handles GET /candidates/:id/notes
+http.get('/candidates/:id/notes', async ({ params }) => {
+  const candidateId = parseInt(params.id);
+  // Get notes for the specific candidate and sort by newest first
+  const notes = await db.notes
+    .where('candidateId')
+    .equals(candidateId)
+    .reverse()
+    .sortBy('createdAt');
+  return HttpResponse.json(notes);
+}),
+
+// Handles POST /candidates/:id/notes
+http.post('/candidates/:id/notes', async ({ request, params }) => {
+  const candidateId = parseInt(params.id);
+  const { text } = await request.json();
+
+  const noteToSave = {
+    candidateId,
+    text,
+    createdAt: new Date(),
+  };
+
+  const newId = await db.notes.add(noteToSave);
+  const newNote = await db.notes.get(newId);
+  return HttpResponse.json(newNote, { status: 201 });
+}),
+
+
 ];

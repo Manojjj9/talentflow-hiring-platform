@@ -67,3 +67,57 @@
 .timeline-notes {
   margin: 4px 0 0 0;
 }
+
+
+.notes-section {
+  margin-top: 40px;
+  border-top: 1px solid #eee;
+  padding-top: 24px;
+}
+
+.note-form textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  box-sizing: border-box; 
+  margin-bottom: 10px;
+}
+
+.note-form button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  color: #fff;
+  background-color: #28a745;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: block;
+  margin-left: auto; 
+}
+
+.notes-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 24px;
+}
+
+.note-item {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.note-date {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-bottom: 8px;
+}
+
+.note-text {
+  margin: 0;
+  white-space: pre-wrap;
+}

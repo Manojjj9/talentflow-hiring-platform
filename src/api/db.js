@@ -4,11 +4,21 @@ import { faker } from '@faker-js/faker';
 
 export const db = new Dexie('talentflowDB');
 
+
+db.version(2).stores({
+  jobs: '++id, title, slug, status, *tags, order',
+  candidates: '++id, name, email, stage, jobId',
+  assessments: '++id, jobId',
+  notes: '++id, candidateId, text, createdAt',
+});
+
+// Initial version with jobs, candidates, and assessments tables
 db.version(1).stores({
   jobs: '++id, title, slug, status, *tags, order',
   candidates: '++id, name, email, stage, jobId',
   assessments: '++id, jobId',
 });
+
 
 // function to seed both jobs and candidates
 export async function seedDatabase() {
