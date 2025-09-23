@@ -4,7 +4,7 @@ import JobsBoard from './pages/JobsBoard';
 import JobDetailPage from './pages/JobDetailPage';
 import CandidatesPage from './pages/CandidatesPage'; 
 import CandidateProfilePage from './pages/CandidatesProfilePage'; 
-
+import AssessmentBuilderPage from './pages/AssessmentBuilderPage';
 // Basic styles for the navigation
 const navStyles = {
   display: 'flex',
@@ -48,6 +48,7 @@ function App() {
         <Route path="/jobs/:jobId" element={<JobDetailPage />} />
         <Route path="/candidates" element={<CandidatesPage />} />
         <Route path="/candidates/:candidateId" element={<CandidateProfilePage />} />
+         <Route path="/jobs/:jobId/assessment" element={<AssessmentBuilderPage />} />
       </Routes>
     </div>
   );

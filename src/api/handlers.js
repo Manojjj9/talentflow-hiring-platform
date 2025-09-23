@@ -220,5 +220,19 @@ http.post('/candidates/:id/notes', async ({ request, params }) => {
   return HttpResponse.json(newNote, { status: 201 });
 }),
 
+// Handles GET /assessments/:jobId
+http.get('/assessments/:jobId', async ({ params }) => {
+  const jobId = parseInt(params.jobId);
+  const assessment = await db.assessments.get(jobId);
+  // Return the assessment or a default structure if none exists
+  return HttpResponse.json(assessment || { jobId, structure: { title: 'New Assessment', sections: [] } });
+}),
 
+// Handles PUT /assessments/:jobId to save the assessment structure
+http.put('/assessments/:jobId', async ({ request, params }) => {
+  const jobId = parseInt(params.jobId);
+  const structure = await request.json();
+  await db.assessments.put({ jobId, structure });
+  return HttpResponse.json({ success: true });
+}),
 ];

@@ -5,6 +5,14 @@ import { faker } from '@faker-js/faker';
 export const db = new Dexie('talentflowDB');
 
 
+
+db.version(3).stores({
+  jobs: '++id, title, slug, status, *tags, order',
+  candidates: '++id, name, email, stage, jobId',
+  assessments: 'jobId, structure',
+  notes: '++id, candidateId, text, createdAt',
+});
+
 db.version(2).stores({
   jobs: '++id, title, slug, status, *tags, order',
   candidates: '++id, name, email, stage, jobId',
@@ -51,7 +59,7 @@ export async function seedDatabase() {
     const stages = ["applied", "screen", "tech", "offer", "hired", "rejected"];
     const candidatesToSeed = [];
 
-    for (let i = 0; i < 1000; i++) { 
+    for (let i = 0; i < 1000; i++) {
       candidatesToSeed.push({
         name: faker.person.fullName(),
         email: faker.internet.email().toLowerCase(),
@@ -65,5 +73,33 @@ export async function seedDatabase() {
 
   if (jobCount > 0 && candidateCount > 0) {
     console.log("Database already contains data, skipping seed.");
+  }
+
+  const assessmentCount = await db.assessments.count();
+  if (assessmentCount === 0) {
+    console.log("Seeding assessments...");
+    const jobs = await db.jobs.toArray();
+   
+    const assessmentsToSeed = jobs
+      .filter(j => j.status === 'active')
+      .slice(0, 3)
+      .map(job => ({
+        jobId: job.id,
+        structure: {
+          title: `${job.title} Assessment`,
+          sections: [{
+            id: 's1',
+            title: 'Basic Information',
+            questions: [{
+              id: 'q1',
+              type: 'short-text',
+              label: 'What is your full name?',
+              required: true,
+            }]
+          }]
+        }
+      }));
+    await db.assessments.bulkAdd(assessmentsToSeed);
+    console.log("Seeded 3 sample assessments.");
   }
 }
