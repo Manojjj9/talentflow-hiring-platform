@@ -1,9 +1,9 @@
-// src/App.jsx
 import React from 'react';
 import { Routes, Route, NavLink } from 'react-router-dom';
 import JobsBoard from './pages/JobsBoard';
 import JobDetailPage from './pages/JobDetailPage';
-import CandidatesPage from './pages/CandidatesPage'; // Import the new page
+import CandidatesPage from './pages/CandidatesPage'; 
+import CandidateProfilePage from './pages/CandidatesProfilePage'; 
 
 // Basic styles for the navigation
 const navStyles = {
@@ -47,6 +47,7 @@ function App() {
         <Route path="/" element={<JobsBoard />} />
         <Route path="/jobs/:jobId" element={<JobDetailPage />} />
         <Route path="/candidates" element={<CandidatesPage />} />
+        <Route path="/candidates/:candidateId" element={<CandidateProfilePage />} />
       </Routes>
     </div>
   );

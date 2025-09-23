@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { db } from './db';
-
+ import { faker } from '@faker-js/faker';
 // Helper function for artificial delay
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
@@ -160,5 +160,34 @@ http.patch('/candidates/:id', async ({ request, params }) => {
     console.error("Error updating candidate:", error);
     return HttpResponse.json({ message: 'Failed to update candidate' }, { status: 500 });
   }
+}),
+
+// Handles GET /candidates/:id to fetch a single candidate's details
+http.get('/candidates/:id', async ({ params }) => {
+  try {
+    const candidateId = parseInt(params.id);
+    const candidate = await db.candidates.get(candidateId);
+    return candidate
+      ? HttpResponse.json(candidate)
+      : HttpResponse.json({ message: 'Candidate not found' }, { status: 404 });
+  } catch (error) {
+    return HttpResponse.json({ message: 'Failed to fetch candidate' }, { status: 500 });
+  }
+}),
+
+// Handles GET /candidates/:id/timeline to generate fake timeline data
+http.get('/candidates/:id/timeline', async ({ params }) => {
+  // Since we don't store history, we'll generate a fake timeline
+  const stages = ["applied", "screen", "tech", "offer"];
+  const timeline = [];
+  for (let i = 0; i < Math.floor(Math.random() * 4) + 1; i++) {
+    timeline.push({
+      stage: stages[i],
+      date: faker.date.past({ years: 1 }),
+      notes: faker.lorem.sentence(),
+    });
+  }
+  await delay(200); // simulate network latency
+  return HttpResponse.json(timeline.sort((a, b) => a.date - b.date));
 }),
 ];
