@@ -4,7 +4,7 @@ Welcome to TALENTFLOW! This project is a deep dive into building a modern, featu
 
 This entire application is a testament to the power of modern frontend tooling, using a mock API layer to handle data and local browser storage to persist it, creating a seamless and complete user experience.
 
-**Live Deployed Link:** [Your Deployed App URL Here]
+**Live Deployed Link:** [Deployed App URL Here]
 
 ## What Can It Do? (Features)
 
@@ -63,7 +63,7 @@ To get a local copy up and running, follow these simple steps.
 
 1.  **Clone the repository:**
     ```bash
-    git clone [Your GitHub Repository URL Here]
+    git clone [https://github.com/Manojjj9/talentflow-hiring-platform.git]
     ```
 2.  **Navigate into the directory:**
     ```bash
