@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -17,19 +16,22 @@ const JobCard = ({ job, onEdit, onArchiveToggle }) => {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    cursor: 'grab', 
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className={`job-card ${job.status}`}>
-      <div className="job-card-header">
+   
+    <div ref={setNodeRef} style={style} className={`job-card ${job.status}`}>
+      
+      
+      <div className="job-card-header" style={{ cursor: 'grab' }} {...attributes} {...listeners}>
         <h3 className="job-title">
-          <Link to={`/jobs/${job.id}`} className="job-title-link" onClick={(e) => e.preventDefault()}>
+          <Link to={`/jobs/${job.id}`} className="job-title-link">
             {job.title}
           </Link>
         </h3>
         <span className="job-status">{job.status}</span>
       </div>
+
       <div className="job-card-body">
         <p>Order: {job.order}</p>
         <div className="job-tags">
@@ -38,6 +40,7 @@ const JobCard = ({ job, onEdit, onArchiveToggle }) => {
           ))}
         </div>
       </div>
+      
       <div className="job-card-actions">
         <button onClick={onArchiveToggle} className="archive-btn">
           {job.status === 'active' ? 'Archive' : 'Unarchive'}

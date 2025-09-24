@@ -10,7 +10,7 @@ db.version(4).stores({
   candidates: '++id, name, email, stage, jobId',
   assessments: 'jobId, structure',
   notes: '++id, candidateId, text, createdAt',
-  responses: '++id, jobId, candidateId, answers', // New table for responses
+  responses: '++id, jobId, candidateId, answers', // table for responses
 });
 
 db.version(3).stores({

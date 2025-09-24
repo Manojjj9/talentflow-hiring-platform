@@ -1,4 +1,4 @@
-// src/features/assessments/components/FormPreview.jsx
+
 import React from 'react';
 
 const FormPreview = ({ structure }) => {

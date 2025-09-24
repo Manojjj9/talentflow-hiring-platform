@@ -1,4 +1,3 @@
-// src/pages
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import './AssessmentFormPage.css';
@@ -15,11 +14,14 @@ const AssessmentFormPage = () => {
     const fetchAssessment = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/assessments/${jobId}`);
+        const res = await fetch(`/jobs/${jobId}/assessment`);
         const data = await res.json();
         setAssessment(data);
-      } catch (err) { console.error(err); } 
-      finally { setLoading(false); }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchAssessment();
   }, [jobId]);
@@ -31,18 +33,41 @@ const AssessmentFormPage = () => {
     }
   };
 
+  const shouldShowQuestion = (question) => {
+    if (!question.condition || !question.condition.sourceQuestionId) {
+      return true; // Always show if no condition is set
+    }
+    const { sourceQuestionId, operator, value } = question.condition;
+    const sourceAnswer = answers[sourceQuestionId];
+
+    if (operator === '===') {
+      return sourceAnswer === value;
+    }
+    if (operator === '!==') {
+      return sourceAnswer !== value;
+    }
+    return true; // Default to showing if operator is unknown
+  };
+
   const validate = () => {
     const newErrors = {};
     assessment.structure.sections.forEach(section => {
       section.questions.forEach(q => {
-        const answer = answers[q.id];
-        if (q.required && (!answer || answer.length === 0)) {
-          newErrors[q.id] = 'This field is required.';
-        }
-        if (q.type === 'numeric' && answer) {
-          const num = Number(answer);
-          if (q.range?.min && num < q.range.min) newErrors[q.id] = `Must be at least ${q.range.min}.`;
-          if (q.range?.max && num > q.range.max) newErrors[q.id] = `Must be no more than ${q.range.max}.`;
+        // Only validate questions that are currently visible
+        if (shouldShowQuestion(q)) {
+          const answer = answers[q.id];
+          if (q.required && (!answer || answer.length === 0)) {
+            newErrors[q.id] = 'This field is required.';
+          }
+          if (q.type === 'numeric' && answer) {
+            const num = Number(answer);
+            if (q.range?.min && num < q.range.min) {
+              newErrors[q.id] = `Must be at least ${q.range.min}.`;
+            }
+            if (q.range?.max && num > q.range.max) {
+              newErrors[q.id] = `Must be no more than ${q.range.max}.`;
+            }
+          }
         }
       });
     });
@@ -63,7 +88,7 @@ const AssessmentFormPage = () => {
   };
 
   if (loading) return <div>Loading Assessment...</div>;
-  if (!assessment?.structure?.sections?.length) return <div>This job does not have an assessment.</div>;
+  if (!assessment?.structure?.sections?.length) return <div>This job does not have an assessment configured.</div>;
 
   if (submitted) {
     return (
@@ -82,36 +107,37 @@ const AssessmentFormPage = () => {
         {assessment.structure.sections.map(section => (
           <div key={section.id}>
             <h2>{section.title}</h2>
-            {section.questions.map(q => (
+            {section.questions.filter(shouldShowQuestion).map(q => (
               <div key={q.id} className="form-question">
                 <label>
-                  {q.label} 
+                  {q.label}
                   {q.required && <span className="required-asterisk"> *</span>}
                 </label>
-                {/* Render different input types based on question.type */}
-                { q.type === 'short-text' && <input type="text" value={answers[q.id] || ''} onChange={e => handleAnswerChange(q.id, e.target.value)} /> }
-                { q.type === 'long-text' && <textarea value={answers[q.id] || ''} onChange={e => handleAnswerChange(q.id, e.target.value)} /> }
-                { q.type === 'numeric' && <input type="number" value={answers[q.id] || ''} onChange={e => handleAnswerChange(q.id, e.target.value)} /> }
-                { q.type === 'file-upload' && <input type="file" /> /* File inputs are not easily managed in this simple state */}
                 
-                { q.type === 'single-choice' && q.options.map(opt => (
+                {q.type === 'short-text' && <input type="text" value={answers[q.id] || ''} onChange={e => handleAnswerChange(q.id, e.target.value)} />}
+                {q.type === 'long-text' && <textarea value={answers[q.id] || ''} onChange={e => handleAnswerChange(q.id, e.target.value)} />}
+                {q.type === 'numeric' && <input type="number" value={answers[q.id] || ''} onChange={e => handleAnswerChange(q.id, e.target.value)} />}
+                {q.type === 'file-upload' && <input type="file" />}
+
+                {q.type === 'single-choice' && q.options.map(opt => (
                   <div key={opt.id} className="form-option">
-                    <input type="radio" name={q.id} value={opt.value} checked={answers[q.id] === opt.value} onChange={e => handleAnswerChange(q.id, e.target.value)} />
-                    <label>{opt.value}</label>
+                    <input type="radio" id={`${q.id}-${opt.id}`} name={q.id} value={opt.value} checked={answers[q.id] === opt.value} onChange={e => handleAnswerChange(q.id, e.target.value)} />
+                    <label htmlFor={`${q.id}-${opt.id}`}>{opt.value}</label>
                   </div>
                 ))}
 
-                { q.type === 'multi-choice' && q.options.map(opt => (
+                {q.type === 'multi-choice' && q.options.map(opt => (
                   <div key={opt.id} className="form-option">
-                    <input type="checkbox" value={opt.value} checked={(answers[q.id] || []).includes(opt.value)} 
+                    <input type="checkbox" id={`${q.id}-${opt.id}`} value={opt.value} checked={(answers[q.id] || []).includes(opt.value)}
                            onChange={e => {
                              const currentAnswers = answers[q.id] || [];
                              const newAnswers = e.target.checked ? [...currentAnswers, opt.value] : currentAnswers.filter(v => v !== opt.value);
                              handleAnswerChange(q.id, newAnswers);
                            }} />
-                    <label>{opt.value}</label>
+                    <label htmlFor={`${q.id}-${opt.id}`}>{opt.value}</label>
                   </div>
                 ))}
+                
                 {errors[q.id] && <p className="error-message">{errors[q.id]}</p>}
               </div>
             ))}

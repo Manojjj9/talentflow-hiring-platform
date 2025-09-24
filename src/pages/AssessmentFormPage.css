@@ -1,4 +1,4 @@
-/* src/pages/ */
+
 .form-runtime-container {
   max-width: 800px;
   margin: 20px auto;
@@ -58,4 +58,28 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.condition-container {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px dashed #ccc;
+}
+
+.condition-toggle {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.condition-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background-color: #f0f2f5;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
 }

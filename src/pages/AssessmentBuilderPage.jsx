@@ -10,20 +10,15 @@ const AssessmentBuilderPage = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchAssessment = useCallback(async () => {
-    // We wrapped this logic in a try...catch...finally block
     try {
-      setLoading(true); // Set loading to true at the start of the fetch
-      const res = await fetch(`/assessments/${jobId}`);
-      if (!res.ok) {
-        throw new Error("Failed to fetch assessment data.");
-      }
+      setLoading(true);
+      const res = await fetch(`/jobs/${jobId}/assessment`);
+      if (!res.ok) throw new Error("Failed to fetch assessment data.");
       const data = await res.json();
       setAssessment(data);
     } catch (error) {
       console.error("Error fetching assessment:", error);
     } finally {
-      // This 'finally' block ensures that loading is always set to false,
-      // even if an error occurs.
       setLoading(false);
     }
   }, [jobId]);
@@ -33,15 +28,14 @@ const AssessmentBuilderPage = () => {
   }, [fetchAssessment]);
 
   const handleSave = async () => {
-    await fetch(`/assessments/${jobId}`, {
+    await fetch(`/jobs/${jobId}/assessment`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(assessment.structure),
     });
     alert('Assessment saved!');
   };
-  
-  // This is the full code with all the handler functions from the previous step
+
   const handleAddSection = () => {
     const newSection = { id: `s${Date.now()}`, title: 'New Section', questions: [] };
     const newStructure = { ...assessment.structure, sections: [...assessment.structure.sections, newSection] };
@@ -66,16 +60,15 @@ const AssessmentBuilderPage = () => {
     }
     const newStructure = {
       ...assessment.structure,
-      sections: assessment.structure.sections.map(s => s.id === sectionId ? { ...s, questions: s.questions.map(q => q.id === questionId ? updatedQuestion : q) } : s ),
+      sections: assessment.structure.sections.map(s => s.id === sectionId ? { ...s, questions: s.questions.map(q => q.id === questionId ? updatedQuestion : q) } : s),
     };
     setAssessment({ ...assessment, structure: newStructure });
-
   };
-  
+
   const handleRemoveQuestion = (sectionId, questionId) => {
-     const newStructure = {
+    const newStructure = {
       ...assessment.structure,
-      sections: assessment.structure.sections.map(s => s.id === sectionId ? { ...s, questions: s.questions.filter(q => q.id !== questionId) } : s ),
+      sections: assessment.structure.sections.map(s => s.id === sectionId ? { ...s, questions: s.questions.filter(q => q.id !== questionId) } : s),
     };
     setAssessment({ ...assessment, structure: newStructure });
   };
@@ -84,7 +77,9 @@ const AssessmentBuilderPage = () => {
     const newOption = { id: `o${Date.now()}`, value: '' };
     const newStructure = {
       ...assessment.structure,
-      sections: assessment.structure.sections.map(s => s.id === sectionId ? { ...s, questions: s.questions.map(q => q.id === questionId ? { ...q, options: [...q.options, newOption] } : q )} : s ),
+      sections: assessment.structure.sections.map(s =>
+        s.id === sectionId ? { ...s, questions: s.questions.map(q => q.id === questionId ? { ...q, options: [...(q.options || []), newOption] } : q) } : s
+      ),
     };
     setAssessment({ ...assessment, structure: newStructure });
   };
@@ -92,7 +87,9 @@ const AssessmentBuilderPage = () => {
   const handleRemoveOption = (sectionId, questionId, optionId) => {
     const newStructure = {
       ...assessment.structure,
-      sections: assessment.structure.sections.map(s => s.id === sectionId ? { ...s, questions: s.questions.map(q => q.id === questionId ? { ...q, options: q.options.filter(opt => opt.id !== optionId) } : q )} : s ),
+      sections: assessment.structure.sections.map(s =>
+        s.id === sectionId ? { ...s, questions: s.questions.map(q => q.id === questionId ? { ...q, options: q.options.filter(opt => opt.id !== optionId) } : q) } : s
+      ),
     };
     setAssessment({ ...assessment, structure: newStructure });
   };
@@ -109,16 +106,16 @@ const AssessmentBuilderPage = () => {
       </div>
       <div className="builder-container">
         <div className="builder-controls">
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={assessment.structure.title}
-            onChange={(e) => setAssessment({ ...assessment, structure: { ...assessment.structure, title: e.target.value }})}
+            onChange={(e) => setAssessment({ ...assessment, structure: { ...assessment.structure, title: e.target.value } })}
             className="assessment-title-input"
           />
           {assessment.structure.sections.map(section => (
             <div key={section.id} className="section-editor">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={section.title}
                 onChange={(e) => {
                   const newSections = assessment.structure.sections.map(s => s.id === section.id ? { ...s, title: e.target.value } : s);
@@ -130,6 +127,7 @@ const AssessmentBuilderPage = () => {
                 <QuestionEditor
                   key={q.id}
                   question={q}
+                  allQuestions={assessment.structure.sections.flatMap(s => s.questions)}
                   onQuestionChange={(id, updated) => handleQuestionChange(section.id, id, updated)}
                   onRemoveQuestion={() => handleRemoveQuestion(section.id, q.id)}
                   onAddOption={() => handleAddOption(section.id, q.id)}

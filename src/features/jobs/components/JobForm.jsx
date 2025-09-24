@@ -1,8 +1,6 @@
-// src/features/jobs/components/JobForm.jsx
-import React, { useState, useEffect } from 'react'; // Import useEffect
-import './JobForm.css';
+import React, { useState, useEffect } from 'react'; 
 
-const JobForm = ({ onSave, onCancel, initialData }) => { // Add initialData prop
+const JobForm = ({ onSave, onCancel, initialData }) => { 
   const [title, setTitle] = useState('');
   const [tags, setTags] = useState('');
   const [error, setError] = useState('');
@@ -27,7 +25,7 @@ const JobForm = ({ onSave, onCancel, initialData }) => { // Add initialData prop
 
   return (
     <form onSubmit={handleSubmit} className="job-form">
-      {/* The rest of the JSX form remains the same */}
+      
       {error && <p className="form-error">{error}</p>}
       <div className="form-group">
         <label htmlFor="title">Job Title</label>

@@ -1,15 +1,15 @@
-/* src/pages/CandidatesPage.css */
+
 .kanban-board {
   display: flex;
   gap: 16px;
   padding: 20px;
-  overflow-x: auto; /* Allow horizontal scrolling for the board */
+  overflow-x: auto; 
   background-color: #f0f2f5;
   min-height: 80vh;
 }
 
 .stage-column {
-  flex: 0 0 300px; /* Give columns a fixed width */
+  flex: 0 0 300px;
   background-color: #e9ecef;
   border-radius: 8px;
   padding: 8px;
@@ -68,8 +68,8 @@
   font-weight: bold;
   color: #007bff;
   text-decoration: none;
-  white-space: nowrap; /* Prevent the link from wrapping */
-  margin-left: 16px; /* Add some space */
+  white-space: nowrap; 
+  margin-left: 16px; 
 }
 
 .profile-link:hover {

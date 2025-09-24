@@ -1,11 +1,12 @@
 import { http, HttpResponse } from 'msw';
 import { db } from './db';
- import { faker } from '@faker-js/faker';
+import { faker } from '@faker-js/faker';
+
 // Helper function for artificial delay
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
 export const handlers = [
-  // Handler for GET /jobs
+  // --- JOB HANDLERS ---
   http.get('/jobs', async ({ request }) => {
     try {
       const url = new URL(request.url);
@@ -32,8 +33,6 @@ export const handlers = [
       return HttpResponse.json({ message: 'Failed to fetch jobs' }, { status: 500 });
     }
   }),
-
-  // Handler for POST /jobs
   http.post('/jobs', async ({ request }) => {
     try {
       const newJobData = await request.json();
@@ -55,8 +54,6 @@ export const handlers = [
       return HttpResponse.json({ message: 'Failed to create job' }, { status: 500 });
     }
   }),
-
-  // Handler for PATCH /jobs/:id
   http.patch('/jobs/:id', async ({ request, params }) => {
     try {
       const jobId = parseInt(params.id);
@@ -70,8 +67,6 @@ export const handlers = [
       return HttpResponse.json({ message: 'Failed to update job' }, { status: 500 });
     }
   }),
-  
-  // Handler for GET /jobs/:id
   http.get('/jobs/:id', async ({ params }) => {
     try {
       const jobId = parseInt(params.id);
@@ -83,8 +78,6 @@ export const handlers = [
       return HttpResponse.json({ message: 'Failed to fetch job' }, { status: 500 });
     }
   }),
-  
-  // Handler for PATCH /jobs/reorder
   http.patch('/jobs/reorder', async ({ request }) => {
     if (Math.random() < 0.2) {
       console.log("API: Simulating a server error for reorder.");
@@ -104,154 +97,92 @@ export const handlers = [
     }
   }),
 
-  // Handles GET /candidates request
-http.get('/candidates', async ({ request }) => {
-  try {
-    const url = new URL(request.url);
-    const page = parseInt(url.searchParams.get('page') || '1');
-    const pageSize = parseInt(url.searchParams.get('pageSize') || '20');
-    const search = url.searchParams.get('search') || '';
-    const stage = url.searchParams.get('stage') || 'all';
-
-    const allCandidates = await db.candidates.toArray();
-
-    const filteredCandidates = allCandidates.filter(candidate => {
-      // Stage filter
-      if (stage !== 'all' && candidate.stage !== stage) {
-        return false;
-      }
-      // Search filter (name or email, case-insensitive)
-      if (search && 
-          !candidate.name.toLowerCase().includes(search.toLowerCase()) && 
-          !candidate.email.toLowerCase().includes(search.toLowerCase())) {
-        return false;
-      }
-      return true;
-    });
-
-    const totalCount = filteredCandidates.length;
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    const paginatedCandidates = filteredCandidates.slice(start, end);
-
-    await delay(300);
-
-    return HttpResponse.json({
-      candidates: paginatedCandidates,
-      totalCount: totalCount,
-    });
-  } catch (error) {
-    console.error("Error fetching candidates:", error);
-    return HttpResponse.json({ message: 'Failed to fetch candidates' }, { status: 500 });
-  }
-}),
-
-// Handles updating a candidate (e.g., changing their stage)
-http.patch('/candidates/:id', async ({ request, params }) => {
-  try {
+  // --- CANDIDATE HANDLERS ---
+  http.get('/candidates', async ({ request }) => {
+    try {
+      const url = new URL(request.url);
+      const page = parseInt(url.searchParams.get('page') || '1');
+      const pageSize = parseInt(url.searchParams.get('pageSize') || '20');
+      const search = url.searchParams.get('search') || '';
+      const stage = url.searchParams.get('stage') || 'all';
+      const allCandidates = await db.candidates.toArray();
+      const filteredCandidates = allCandidates.filter(candidate => {
+        if (stage !== 'all' && candidate.stage !== stage) return false;
+        if (search && !candidate.name.toLowerCase().includes(search.toLowerCase()) && !candidate.email.toLowerCase().includes(search.toLowerCase())) return false;
+        return true;
+      });
+      const totalCount = filteredCandidates.length;
+      const start = (page - 1) * pageSize;
+      const end = start + pageSize;
+      const paginatedCandidates = filteredCandidates.slice(start, end);
+      await delay(300);
+      return HttpResponse.json({ candidates: paginatedCandidates, totalCount: totalCount });
+    } catch (error) {
+      console.error("Error fetching candidates:", error);
+      return HttpResponse.json({ message: 'Failed to fetch candidates' }, { status: 500 });
+    }
+  }),
+  http.patch('/candidates/:id', async ({ request, params }) => {
+    try {
+      const candidateId = parseInt(params.id);
+      const updates = await request.json();
+      await db.candidates.update(candidateId, updates);
+      const updatedCandidate = await db.candidates.get(candidateId);
+      return HttpResponse.json(updatedCandidate);
+    } catch (error) {
+      console.error("Error updating candidate:", error);
+      return HttpResponse.json({ message: 'Failed to update candidate' }, { status: 500 });
+    }
+  }),
+  http.get('/candidates/:id', async ({ params }) => {
+    try {
+      const candidateId = parseInt(params.id);
+      const candidate = await db.candidates.get(candidateId);
+      return candidate ? HttpResponse.json(candidate) : HttpResponse.json({ message: 'Candidate not found' }, { status: 404 });
+    } catch (error) {
+      return HttpResponse.json({ message: 'Failed to fetch candidate' }, { status: 500 });
+    }
+  }),
+  http.get('/candidates/:id/timeline', async ({ params }) => {
+    const stages = ["applied", "screen", "tech", "offer"];
+    const timeline = [];
+    for (let i = 0; i < Math.floor(Math.random() * 4) + 1; i++) {
+      timeline.push({ stage: stages[i], date: faker.date.past({ years: 1 }), notes: faker.lorem.sentence() });
+    }
+    await delay(200);
+    return HttpResponse.json(timeline.sort((a, b) => a.date - b.date));
+  }),
+  http.get('/candidates/:id/notes', async ({ params }) => {
     const candidateId = parseInt(params.id);
-    const updates = await request.json();
-    
-    await db.candidates.update(candidateId, updates);
-    const updatedCandidate = await db.candidates.get(candidateId);
-
-    return HttpResponse.json(updatedCandidate);
-  } catch (error) {
-    console.error("Error updating candidate:", error);
-    return HttpResponse.json({ message: 'Failed to update candidate' }, { status: 500 });
-  }
-}),
-
-// Handles GET /candidates/:id to fetch a single candidate's details
-http.get('/candidates/:id', async ({ params }) => {
-  try {
+    const notes = await db.notes.where('candidateId').equals(candidateId).reverse().sortBy('createdAt');
+    return HttpResponse.json(notes);
+  }),
+  http.post('/candidates/:id/notes', async ({ request, params }) => {
     const candidateId = parseInt(params.id);
-    const candidate = await db.candidates.get(candidateId);
-    return candidate
-      ? HttpResponse.json(candidate)
-      : HttpResponse.json({ message: 'Candidate not found' }, { status: 404 });
-  } catch (error) {
-    return HttpResponse.json({ message: 'Failed to fetch candidate' }, { status: 500 });
-  }
-}),
+    const { text } = await request.json();
+    const noteToSave = { candidateId, text, createdAt: new Date() };
+    const newId = await db.notes.add(noteToSave);
+    const newNote = await db.notes.get(newId);
+    return HttpResponse.json(newNote, { status: 201 });
+  }),
 
-// Handles GET /candidates/:id/timeline to generate fake timeline data
-http.get('/candidates/:id/timeline', async ({ params }) => {
-  // Since we don't store history, we'll generate a fake timeline
-  const stages = ["applied", "screen", "tech", "offer"];
-  const timeline = [];
-  for (let i = 0; i < Math.floor(Math.random() * 4) + 1; i++) {
-    timeline.push({
-      stage: stages[i],
-      date: faker.date.past({ years: 1 }),
-      notes: faker.lorem.sentence(),
-    });
-  }
-  await delay(200); // simulate network latency
-  return HttpResponse.json(timeline.sort((a, b) => a.date - b.date));
-}),
-
-
-// Handles GET /candidates/:id/notes
-http.get('/candidates/:id/notes', async ({ params }) => {
-  const candidateId = parseInt(params.id);
-  // Get notes for the specific candidate and sort by newest first
-  const notes = await db.notes
-    .where('candidateId')
-    .equals(candidateId)
-    .reverse()
-    .sortBy('createdAt');
-  return HttpResponse.json(notes);
-}),
-
-// Handles POST /candidates/:id/notes
-http.post('/candidates/:id/notes', async ({ request, params }) => {
-  const candidateId = parseInt(params.id);
-  const { text } = await request.json();
-
-  const noteToSave = {
-    candidateId,
-    text,
-    createdAt: new Date(),
-  };
-
-  const newId = await db.notes.add(noteToSave);
-  const newNote = await db.notes.get(newId);
-  return HttpResponse.json(newNote, { status: 201 });
-}),
-
-// Handles GET /assessments/:jobId
-http.get('/assessments/:jobId', async ({ params }) => {
-  const jobId = parseInt(params.jobId);
-  const assessment = await db.assessments.get(jobId);
-  // Return the assessment or a default structure if none exists
-  return HttpResponse.json(assessment || { jobId, structure: { title: 'New Assessment', sections: [] } });
-}),
-
-// Handles PUT /assessments/:jobId to save the assessment structure
-http.put('/assessments/:jobId', async ({ request, params }) => {
-  const jobId = parseInt(params.jobId);
-  const structure = await request.json();
-  await db.assessments.put({ jobId, structure });
-  return HttpResponse.json({ success: true });
-}),
-
-// Handles POST /assessments/:jobId/submit
-http.post('/assessments/:jobId/submit', async ({ request, params }) => {
-  const jobId = parseInt(params.jobId);
-  const { answers } = await request.json();
-  
-  // For now, we'll just log the submission and save it.
-  // We'll assign it to a dummy candidateId of 1.
-  console.log(`Submission for Job ID ${jobId}:`, answers);
-  
-  await db.responses.add({
-    jobId,
-    candidateId: 1, // Dummy ID
-    answers,
-    submittedAt: new Date(),
-  });
-
-  return HttpResponse.json({ success: true, message: 'Assessment submitted successfully!' });
-}),
+  // --- ASSESSMENT HANDLERS ---
+  http.get('/jobs/:jobId/assessment', async ({ params }) => {
+    const jobId = parseInt(params.jobId);
+    const assessment = await db.assessments.get(jobId);
+    return HttpResponse.json(assessment || { jobId, structure: { title: 'New Assessment', sections: [] } });
+  }),
+  http.put('/jobs/:jobId/assessment', async ({ request, params }) => {
+    const jobId = parseInt(params.jobId);
+    const structure = await request.json();
+    await db.assessments.put({ jobId, structure });
+    return HttpResponse.json({ success: true });
+  }),
+  http.post('/assessments/:jobId/submit', async ({ request, params }) => {
+    const jobId = parseInt(params.jobId);
+    const { answers } = await request.json();
+    console.log(`Submission for Job ID ${jobId}:`, answers);
+    await db.responses.add({ jobId, candidateId: 1, answers, submittedAt: new Date() });
+    return HttpResponse.json({ success: true, message: 'Assessment submitted successfully!' });
+  }),
 ];
