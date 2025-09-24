@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'; 
-
+import './JobForm.css';
 const JobForm = ({ onSave, onCancel, initialData }) => { 
   const [title, setTitle] = useState('');
   const [tags, setTags] = useState('');

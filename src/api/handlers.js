@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { db } from './db';
 import { faker } from '@faker-js/faker';
 
-// Helper function for artificial delay
+// A simple helper for adding a realistic network delay to our mock API calls.
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
 export const handlers = [
@@ -33,7 +33,13 @@ export const handlers = [
       return HttpResponse.json({ message: 'Failed to fetch jobs' }, { status: 500 });
     }
   }),
+
   http.post('/jobs', async ({ request }) => {
+    if (Math.random() < 0.1) {
+      console.log(`API: Simulating a 500 error for ${request.method} ${request.url}`);
+      await delay(500);
+      return HttpResponse.json({ message: 'A random server error occurred!' }, { status: 500 });
+    }
     try {
       const newJobData = await request.json();
       if (!newJobData.title) return HttpResponse.json({ message: 'Title is required' }, { status: 400 });
@@ -54,7 +60,13 @@ export const handlers = [
       return HttpResponse.json({ message: 'Failed to create job' }, { status: 500 });
     }
   }),
+
   http.patch('/jobs/:id', async ({ request, params }) => {
+    if (Math.random() < 0.1) {
+      console.log(`API: Simulating a 500 error for ${request.method} ${request.url}`);
+      await delay(500);
+      return HttpResponse.json({ message: 'A random server error occurred!' }, { status: 500 });
+    }
     try {
       const jobId = parseInt(params.id);
       const updates = await request.json();
@@ -67,6 +79,7 @@ export const handlers = [
       return HttpResponse.json({ message: 'Failed to update job' }, { status: 500 });
     }
   }),
+
   http.get('/jobs/:id', async ({ params }) => {
     try {
       const jobId = parseInt(params.id);
@@ -78,9 +91,10 @@ export const handlers = [
       return HttpResponse.json({ message: 'Failed to fetch job' }, { status: 500 });
     }
   }),
+
   http.patch('/jobs/reorder', async ({ request }) => {
-    if (Math.random() < 0.2) {
-      console.log("API: Simulating a server error for reorder.");
+    if (Math.random() < 0.1) {
+      console.log(`API: Simulating a 500 error for ${request.method} ${request.url}`);
       await delay(500);
       return HttpResponse.json({ message: 'Server error' }, { status: 500 });
     }
@@ -122,7 +136,13 @@ export const handlers = [
       return HttpResponse.json({ message: 'Failed to fetch candidates' }, { status: 500 });
     }
   }),
+
   http.patch('/candidates/:id', async ({ request, params }) => {
+    if (Math.random() < 0.1) {
+      console.log(`API: Simulating a 500 error for ${request.method} ${request.url}`);
+      await delay(500);
+      return HttpResponse.json({ message: 'A random server error occurred!' }, { status: 500 });
+    }
     try {
       const candidateId = parseInt(params.id);
       const updates = await request.json();
@@ -134,6 +154,7 @@ export const handlers = [
       return HttpResponse.json({ message: 'Failed to update candidate' }, { status: 500 });
     }
   }),
+
   http.get('/candidates/:id', async ({ params }) => {
     try {
       const candidateId = parseInt(params.id);
@@ -143,6 +164,7 @@ export const handlers = [
       return HttpResponse.json({ message: 'Failed to fetch candidate' }, { status: 500 });
     }
   }),
+
   http.get('/candidates/:id/timeline', async ({ params }) => {
     const stages = ["applied", "screen", "tech", "offer"];
     const timeline = [];
@@ -152,12 +174,19 @@ export const handlers = [
     await delay(200);
     return HttpResponse.json(timeline.sort((a, b) => a.date - b.date));
   }),
+
   http.get('/candidates/:id/notes', async ({ params }) => {
     const candidateId = parseInt(params.id);
     const notes = await db.notes.where('candidateId').equals(candidateId).reverse().sortBy('createdAt');
     return HttpResponse.json(notes);
   }),
+
   http.post('/candidates/:id/notes', async ({ request, params }) => {
+    if (Math.random() < 0.1) {
+      console.log(`API: Simulating a 500 error for ${request.method} ${request.url}`);
+      await delay(500);
+      return HttpResponse.json({ message: 'A random server error occurred!' }, { status: 500 });
+    }
     const candidateId = parseInt(params.id);
     const { text } = await request.json();
     const noteToSave = { candidateId, text, createdAt: new Date() };
@@ -172,14 +201,26 @@ export const handlers = [
     const assessment = await db.assessments.get(jobId);
     return HttpResponse.json(assessment || { jobId, structure: { title: 'New Assessment', sections: [] } });
   }),
+
   http.put('/jobs/:jobId/assessment', async ({ request, params }) => {
+    if (Math.random() < 0.1) {
+      console.log(`API: Simulating a 500 error for ${request.method} ${request.url}`);
+      await delay(500);
+      return HttpResponse.json({ message: 'A random server error occurred!' }, { status: 500 });
+    }
     const jobId = parseInt(params.jobId);
     const structure = await request.json();
     await db.assessments.put({ jobId, structure });
     return HttpResponse.json({ success: true });
   }),
+
   http.post('/assessments/:jobId/submit', async ({ request, params }) => {
-    const jobId = parseInt(params.jobId);
+    if (Math.random() < 0.1) {
+      console.log(`API: Simulating a 500 error for ${request.method} ${request.url}`);
+      await delay(500);
+      return HttpResponse.json({ message: 'A random server error occurred!' }, { status: 500 });
+    }
+    const jobId = parseInt(params.id);
     const { answers } = await request.json();
     console.log(`Submission for Job ID ${jobId}:`, answers);
     await db.responses.add({ jobId, candidateId: 1, answers, submittedAt: new Date() });
