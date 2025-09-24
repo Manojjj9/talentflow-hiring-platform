@@ -4,7 +4,7 @@ Welcome to TALENTFLOW! This project is a deep dive into building a modern, featu
 
 This entire application is a testament to the power of modern frontend tooling, using a mock API layer to handle data and local browser storage to persist it, creating a seamless and complete user experience.
 
-**Live Deployed Link:** [Deployed App URL Here]
+**Live Deployed Link:** [https://talentflowhiringapp.netlify.app/]
 
 ## What Can It Do? (Features)
 
